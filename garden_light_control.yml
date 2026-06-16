@@ -1,0 +1,47 @@
+alias: Garden Light Control
+description: ""
+triggers:
+  - trigger: sun
+    event: sunrise
+    offset: 0
+  - trigger: time
+    at: input_datetime.garden_light_on_time
+  - trigger: time
+    at: input_datetime.garden_light_off_time
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: 0
+        sequence:
+          - action: input_datetime.set_datetime
+            data:
+              datetime: |
+                {{ (now() + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S') }}
+            target:
+              entity_id: input_datetime.garden_light_on_time
+          - action: input_datetime.set_datetime
+            data:
+              datetime: >
+                {{ (now() + timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')
+                }}
+            target:
+              entity_id: input_datetime.garden_light_off_time
+      - conditions:
+          - condition: trigger
+            id: 1
+        sequence:
+          - type: turn_on
+            device_id: 6fe1b406d006fd64963c19fab0530495
+            entity_id: f8e6e4fc7acb56096e8a6506ec2bdc4e
+            domain: switch
+      - conditions:
+          - condition: trigger
+            id: 2
+        sequence:
+          - type: turn_off
+            device_id: 6fe1b406d006fd64963c19fab0530495
+            entity_id: f8e6e4fc7acb56096e8a6506ec2bdc4e
+            domain: switch
+mode: single

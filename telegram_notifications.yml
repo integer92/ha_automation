@@ -1,0 +1,61 @@
+alias: Telegram Notifications
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - binary_sensor.b_humidifier_water_shortage
+    to:
+      - "on"
+    id: water_shortage_on
+  - trigger: state
+    entity_id:
+      - sensor.alpstuga_air_quality_monitor_humidity
+    to:
+      - unavailable
+    id: office_humidity_unavailable
+  - trigger: state
+    entity_id:
+      - sensor.alpstuga_air_quality_monitor_air_quality
+    id: office_air_quality_not_good
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: water_shortage_on
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: Bedroon Humidifier Water Shortage!
+      - conditions:
+          - condition: trigger
+            id: office_humidity_unavailable
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: Office Humidity Unavailable!
+      - conditions:
+          - condition: trigger
+            id: office_air_quality_not_good
+          - condition: template
+            value_template: >-
+              {{ states('sensor.alpstuga_air_quality_monitor_air_quality') !=
+              'good' }}
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: >-
+                Office Air Quality -
+                ({{states('sensor.alpstuga_air_quality_monitor_air_quality')
+                }}),
+                CO2:{{states('sensor.alpstuga_air_quality_monitor_carbon_dioxide')}}ppm,
+                PM:{{ states('sensor.alpstuga_air_quality_monitor_pm2_5')}}μg/m³
+mode: single

@@ -1,0 +1,109 @@
+alias: Office Humidifier Control Presence Based (30m)
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.alpstuga_air_quality_monitor_humidity
+    id: humidity
+  - trigger: state
+    entity_id: binary_sensor.sonoff_snzb_06p
+    to: "on"
+    id: presence_on
+  - trigger: state
+    entity_id: binary_sensor.sonoff_snzb_06p
+    to: "off"
+    id: presence_off
+  - trigger: time_pattern
+    minutes: /1
+    id: periodic_check
+  - trigger: homeassistant
+    event: start
+    id: startup
+actions:
+  - if:
+      - condition: trigger
+        id: presence_off
+    then:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.office_vacancy_start
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+  - if:
+      - condition: trigger
+        id: presence_on
+    then:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.office_vacancy_start
+        data:
+          datetime: "1970-01-01 00:00:00"
+  - variables:
+      humidity_raw: "{{ states('sensor.alpstuga_air_quality_monitor_humidity') }}"
+      humidity_available: |
+        {{ humidity_raw not in ['unknown', 'unavailable', 'none', ''] }}
+      humidity: |
+        {{ humidity_raw | float(0) }}
+      vacancy_start: |
+        {{ states('input_datetime.office_vacancy_start') }}
+      vacancy_seconds: >
+        {% set ts = states('input_datetime.office_vacancy_start') %} {% if ts in
+        ['1970-01-01 00:00:00', 'unknown', 'unavailable', ''] %}
+          0
+        {% else %}
+          {{ as_timestamp(now()) - as_timestamp(ts) }}
+        {% endif %}  
+      occupied_effective: |
+        {{
+          is_state('binary_sensor.sonoff_snzb_06p', 'on')
+          or
+          (
+            is_state('binary_sensor.sonoff_snzb_06p', 'off')
+            and
+            vacancy_seconds | float(0) < grace_period_seconds
+          )
+        }}
+      vacant_effective: |
+        {{
+          is_state('binary_sensor.sonoff_snzb_06p', 'off')
+          and
+          vacancy_seconds | float(0) >= grace_period_seconds
+        }}
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ not humidity_available }}"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.office_room_humidifier
+      - conditions:
+          - condition: template
+            value_template: "{{ vacant_effective }}"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.office_room_humidifier
+      - conditions:
+          - condition: template
+            value_template: "{{ occupied_effective }}"
+          - condition: template
+            value_template: "{{ humidity < humidity_low }}"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.office_room_humidifier
+      - conditions:
+          - condition: template
+            value_template: "{{ occupied_effective }}"
+          - condition: template
+            value_template: "{{ humidity > humidity_high }}"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.office_room_humidifier
+mode: single
+variables:
+  humidity_low: 32
+  humidity_high: 35
+  grace_period_seconds: 1800

@@ -1,0 +1,37 @@
+alias: Office Light Control via Occupancy sensing
+description: ""
+triggers:
+  - type: occupied
+    device_id: 438df754b1430cc83692738442b7d172
+    entity_id: 8f32a5f0c3d5d44e0f2be0a1674c0d90
+    domain: binary_sensor
+    trigger: device
+    id: occupied
+  - type: not_occupied
+    device_id: 438df754b1430cc83692738442b7d172
+    entity_id: 8f32a5f0c3d5d44e0f2be0a1674c0d90
+    domain: binary_sensor
+    trigger: device
+    id: not_occupied
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: occupied
+        sequence:
+          - action: switch.turn_on
+            metadata: {}
+            data: {}
+            target:
+              device_id: 2e563ac0657988f54ccb7f7dbfac0026
+      - conditions:
+          - condition: trigger
+            id: not_occupied
+        sequence:
+          - action: switch.turn_off
+            metadata: {}
+            data: {}
+            target:
+              device_id: 2e563ac0657988f54ccb7f7dbfac0026
+mode: single

@@ -1,0 +1,54 @@
+alias: Garage Fan Control
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.xiaomi_lywsd03mmc_z_temperature
+  - trigger: homeassistant
+    event: start
+actions:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states('sensor.xiaomi_lywsd03mmc_z_temperature') | float(0) >=
+              temperature_high }}
+        sequence:
+          - condition: template
+            value_template: "{{ states('switch.garage_fan') == 'off' }}"
+          - target:
+              entity_id: switch.garage_fan
+            action: switch.turn_on
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: >-
+                Garage Fan On {{
+                states('sensor.xiaomi_lywsd03mmc_z_temperature') | float(0) |
+                round(2) }} F
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states('sensor.xiaomi_lywsd03mmc_z_temperature') | float(0) <=
+              temperature_low }}
+        sequence:
+          - condition: template
+            value_template: "{{ states('switch.garage_fan') == 'on' }}"
+          - target:
+              entity_id: switch.garage_fan
+            action: switch.turn_off
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: >-
+                Garage Fan Off {{
+                states('sensor.xiaomi_lywsd03mmc_z_temperature') | float(0) |
+                round(2) }} F
+variables:
+  temperature_low: 92
+  temperature_high: 94
+mode: single

@@ -1,0 +1,43 @@
+alias: Garage AC Auto Control
+description: ""
+triggers:
+  - type: temperature
+    device_id: 8093e666961165ac9e8e8ded0d019a5f
+    entity_id: sensor.xiaomi_lywsd03mmc_z_temperature
+    domain: sensor
+    trigger: device
+    above: 100
+    id: too_hot
+  - type: temperature
+    device_id: 8093e666961165ac9e8e8ded0d019a5f
+    entity_id: sensor.xiaomi_lywsd03mmc_z_temperature
+    domain: sensor
+    trigger: device
+    below: 96
+    id: cool_enough
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: too_hot
+        sequence:
+          - action: script.garage_ac_on
+            data: {}
+          - action: notify.send_message
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: Garage AC On
+      - conditions:
+          - condition: trigger
+            id: cool_enough
+        sequence:
+          - action: script.garage_ac_off
+            data: {}
+          - action: notify.send_message
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: Garage AC Off
+mode: single

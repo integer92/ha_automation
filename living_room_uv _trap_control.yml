@@ -1,0 +1,33 @@
+alias: Living Room UV Trap control
+description: ""
+triggers:
+  - trigger: time
+    at: "16:00:00"
+  - trigger: sun
+    event: sunset
+    offset: "02:00:00"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "0"
+        sequence:
+          - type: turn_on
+            device_id: 0e44fa4b0b6689d8b84c983cc2dc8490
+            entity_id: e74711f37dcf318a11fb56e87e18b033
+            domain: switch
+      - conditions:
+          - condition: trigger
+            id: "1"
+        sequence:
+          - wait_template: "{{ true }}"
+            timeout:
+              hours: 2
+            continue_on_timeout: true
+          - action: switch.turn_off
+            metadata: {}
+            data: {}
+            target:
+              device_id: 0e44fa4b0b6689d8b84c983cc2dc8490
+mode: single

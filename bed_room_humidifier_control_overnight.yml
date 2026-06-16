@@ -1,0 +1,58 @@
+alias: Bed Room Humidifier Control Overnight
+description: 오후 10:00~오전 10:00, 습도 32 미만이면 ON / 35 이상이면 OFF
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.ble_humidity_e5575839a12c
+  - trigger: time
+    at: "22:00:00"
+  - trigger: time
+    at: "10:00:00"
+  - trigger: homeassistant
+    event: start
+actions:
+  - choose:
+      - conditions:
+          - condition: not
+            conditions:
+              - condition: time
+                after: "22:00:00"
+                before: "10:00:00"
+        sequence:
+          - type: turn_off
+            device_id: 91e12c0f6ce109226ca4bd7aba194e93
+            entity_id: 5f663153cbb5a894ca870877881a7b07
+            domain: fan
+      - conditions:
+          - condition: time
+            after: "22:00:00"
+            before: "10:00:00"
+          - condition: numeric_state
+            entity_id: sensor.ble_humidity_e5575839a12c
+            below: 32
+        sequence:
+          - type: turn_on
+            device_id: 91e12c0f6ce109226ca4bd7aba194e93
+            entity_id: 5f663153cbb5a894ca870877881a7b07
+            domain: fan
+          - delay:
+              seconds: 3
+          - action: fan.set_percentage
+            metadata: {}
+            target:
+              device_id: 91e12c0f6ce109226ca4bd7aba194e93
+            data:
+              percentage: 100
+      - conditions:
+          - condition: time
+            after: "22:00:00"
+            before: "10:00:00"
+          - condition: numeric_state
+            entity_id: sensor.ble_humidity_e5575839a12c
+            above: 34
+        sequence:
+          - type: turn_off
+            device_id: 91e12c0f6ce109226ca4bd7aba194e93
+            entity_id: 5f663153cbb5a894ca870877881a7b07
+            domain: fan
+mode: single
