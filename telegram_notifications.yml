@@ -17,6 +17,13 @@ triggers:
     entity_id:
       - sensor.alpstuga_air_quality_monitor_air_quality
     id: office_air_quality_not_good
+  - trigger: state
+    entity_id:
+      - cover.smart_garage_door_1909183707109790801948e1e9520aae_garage
+    to:
+      - open
+      - closed  
+    id: garage_door_status
 actions:
   - choose:
       - conditions:
@@ -58,4 +65,15 @@ actions:
                 }}),
                 CO2:{{states('sensor.alpstuga_air_quality_monitor_carbon_dioxide')}}ppm,
                 PM:{{ states('sensor.alpstuga_air_quality_monitor_pm2_5')}}μg/m³
+      - conditions:
+          - condition: trigger
+            id: garage_door_status
+        sequence:
+          - action: notify.send_message
+            metadata: {}
+            target:
+              entity_id: notify.integer_jeongsoo_kim
+            data:
+              message: >-
+                Garage Door: {{states('cover.smart_garage_door_1909183707109790801948e1e9520aae_garage')}}
 mode: single
