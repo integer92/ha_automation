@@ -1,0 +1,39 @@
+alias: Bug Trap Light bulb Check
+description: "Check the light bulb using the current value. If the current is 0, then the light bulb is not working."
+triggers:
+  - trigger: state
+    entity_id:
+      - switch.third_reality_inc_3rsp02028bz_4
+      - switch.third_reality_inc_3rsp02028bz
+      - switch.third_reality_inc_3rsp02028bz_2
+      - switch.third_reality_inc_3rsp02028bz_3
+    to: "on"
+actions:
+  - delay:
+      seconds: 5
+  - variables:
+      room_map:
+        switch.third_reality_inc_3rsp02028bz_4: 
+          name: Office
+          sensor: sensor.third_reality_inc_3rsp02028bz_current_4
+        switch.third_reality_inc_3rsp02028bz: 
+          name: Bed Room
+          sensor: sensor.third_reality_inc_3rsp02028bz_current
+        switch.third_reality_inc_3rsp02028bz_2: 
+          name: Living Room
+          sensor: sensor.third_reality_inc_3rsp02028bz_current_2
+        switch.third_reality_inc_3rsp02028bz_3: 
+          name: Guest Room
+          sensor: sensor.third_reality_inc_3rsp02028bz_current_3
+      triggered_switch: "{{ trigger.entity_id }}"
+      room_name: "{{ room_map[trigger.entity_id]['name'] }}"
+      current_sensor: "{{ room_map[trigger.entity_id]['sensor'] }}"
+  - if:
+      - condition: template
+        value_template: "{{ states(current_sensor) | float(0) == 0 }}"
+    then:
+      - action: telegram_bot.send_message
+        data:
+          message: "{{ room_name }} Bug Trap Check!!"
+mode: parallel
+max: 10
