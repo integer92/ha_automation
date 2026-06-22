@@ -4,7 +4,7 @@ triggers:
   - trigger: state
     entity_id:
       - sensor.ble_humidity_e5575839a12c
-      - binary_sensor.bedroom_sonoff_snzb_06p24
+      - binary_sensor.bedroom_occupied_stable
   - trigger: homeassistant
     event: start
 actions:
@@ -22,13 +22,9 @@ actions:
             data: {}
       - conditions:
           - condition: state
-            entity_id: binary_sensor.bedroom_sonoff_snzb_06p24
+            entity_id: binary_sensor.bedroom_occupied_stable
             state:
               - "on"
-            for:
-              hours: 0
-              minutes: 0
-              seconds: 30
           - condition: template
             value_template: >-
               {{ states('sensor.ble_humidity_e5575839a12c') | float(0) <=
@@ -42,13 +38,9 @@ actions:
               percentage: 100
       - conditions:
           - condition: state
-            entity_id: binary_sensor.bedroom_sonoff_snzb_06p24
+            entity_id: binary_sensor.bedroom_occupied_stable
             state:
               - "off"
-            for:
-              hours: 0
-              minutes: 2
-              seconds: 0
         sequence:
           - action: fan.turn_off
             metadata: {}

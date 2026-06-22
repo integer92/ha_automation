@@ -1,0 +1,29 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+zha:
+  database_path: /config/zigbee.db
+  enable_quirks: true
+  custom_quirks_path: /config/zha_quirks/
+  zigpy_config:
+    ota:
+      sonoff_provider: true
+
+template:
+  - binary_sensor:
+      - name: Bedroom Occupied Stable
+        state: >
+          {{ is_state('binary_sensor.bedroom_sonoff_snzb_06p24', 'on') }}
+        delay_on:
+          minutes: 1
+        delay_off:
+          minutes: 15
