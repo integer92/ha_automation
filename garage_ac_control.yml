@@ -21,6 +21,9 @@ actions:
       - conditions:
           - condition: trigger
             id: too_hot
+          - condition: state
+            entity_id: input_boolean.garage_ac_status
+            state: "off"
         sequence:
           - action: script.garage_ac_on
             data: {}
@@ -32,6 +35,9 @@ actions:
       - conditions:
           - condition: trigger
             id: cool_enough
+          - condition: state
+            entity_id: input_boolean.garage_ac_status
+            state: "on"
         sequence:
           - action: script.garage_ac_off
             data: {}
