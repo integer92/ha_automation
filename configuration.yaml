@@ -14,9 +14,6 @@ zha:
   database_path: /config/zigbee.db
   enable_quirks: true
   custom_quirks_path: /config/zha_quirks/
-  zigpy_config:
-    ota:
-      sonoff_provider: true
 
 template:
   - binary_sensor:

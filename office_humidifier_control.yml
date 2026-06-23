@@ -6,11 +6,13 @@ triggers:
       - sensor.alpstuga_air_quality_monitor_humidity
     id: humidity
   - trigger: state
-    entity_id: binary_sensor.sonoff_snzb_06p
-    to: "on"
+    entity_id:
+      - binary_sensor.office_sonoff_snzb_06p
+    to:
+      - "on"
     id: presence_on
   - trigger: state
-    entity_id: binary_sensor.sonoff_snzb_06p
+    entity_id: binary_sensor.office_sonoff_snzb_06p
     to: "off"
     id: presence_off
   - trigger: time_pattern
@@ -55,17 +57,17 @@ actions:
         {% endif %}  
       occupied_effective: |
         {{
-          is_state('binary_sensor.sonoff_snzb_06p', 'on')
+          is_state('binary_sensor.office_sonoff_snzb_06p', 'on')
           or
           (
-            is_state('binary_sensor.sonoff_snzb_06p', 'off')
+            is_state('binary_sensor.office_sonoff_snzb_06p', 'off')
             and
             vacancy_seconds | float(0) < grace_period_seconds
           )
         }}
       vacant_effective: |
         {{
-          is_state('binary_sensor.sonoff_snzb_06p', 'off')
+          is_state('binary_sensor.office_sonoff_snzb_06p', 'off')
           and
           vacancy_seconds | float(0) >= grace_period_seconds
         }}
@@ -88,22 +90,20 @@ actions:
           - condition: template
             value_template: "{{ occupied_effective }}"
           - condition: template
-            value_template: "{{ humidity < humidity_low }}"
+            value_template: "{{ humidity <= humidity_low }}"
         sequence:
           - action: switch.turn_on
             target:
               entity_id: switch.office_room_humidifier
       - conditions:
           - condition: template
-            value_template: "{{ occupied_effective }}"
-          - condition: template
-            value_template: "{{ humidity > humidity_high }}"
+            value_template: "{{ humidity >= humidity_high }}"
         sequence:
           - action: switch.turn_off
             target:
               entity_id: switch.office_room_humidifier
 mode: single
 variables:
-  humidity_low: 32
+  humidity_low: 33
   humidity_high: 35
   grace_period_seconds: 1800
