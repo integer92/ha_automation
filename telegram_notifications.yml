@@ -24,6 +24,9 @@ triggers:
       - open
       - closed  
     id: garage_door_status
+  - trigger: homeassistant
+    event: start
+    id: startup
 actions:
   - choose:
       - conditions:
@@ -76,4 +79,11 @@ actions:
             data:
               message: >-
                 Garage Door: {{states('cover.smart_garage_door_1909183707109790801948e1e9520aae_garage')}}
+      - conditions:
+          - condition: trigger
+            id: startup
+        sequence:
+          - action: telegram_bot.send_message
+            data:
+              message: "HA restarted!"
 mode: single
