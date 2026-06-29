@@ -1,0 +1,38 @@
+alias: Living Room Cam - Home/Away Based Control
+description: ""
+triggers:
+  - entity_id: device_tracker.iphone
+    from: home
+    to: not_home
+    for:
+      minutes: 2
+    id: leave
+    trigger: state
+  - entity_id: device_tracker.iphone
+    from: not_home
+    to: home
+    id: arrive
+    trigger: state
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: leave
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.living_room_living_cam
+          - action: telegram_bot.send_message
+            data:
+              message: Living Cam On!
+      - conditions:
+          - condition: trigger
+            id: arrive
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.living_room_living_cam
+          - action: telegram_bot.send_message
+            data:
+              message: Living Cam Off!
+mode: single
