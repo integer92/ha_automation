@@ -1,0 +1,43 @@
+alias: Home HVAC Control
+description: ""
+triggers:
+  - entity_id: device_tracker.iphone
+    from: home
+    to: not_home
+    for:
+      minutes: 2
+    id: leave
+    trigger: state
+  - entity_id: device_tracker.iphone
+    from: not_home
+    to: home
+    id: arrive
+    trigger: state
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: leave
+        sequence:
+          - action: select.select_option
+            metadata: {}
+            target:
+              entity_id: select.my_ecobee_current_mode
+            data:
+              option: sleep
+          - action: telegram_bot.send_message
+            data:
+              message: "HVAC Mode: Sleep!"
+      - conditions:
+          - condition: trigger
+            id: arrive
+        sequence:
+          - action: button.press
+            metadata: {}
+            target:
+              entity_id: button.my_ecobee_clear_hold
+            data: {}
+          - action: telegram_bot.send_message
+            data:
+              message: HVAC Mode Clear!
+mode: single
