@@ -21,6 +21,54 @@ actions:
   - choose:
       - conditions:
           - condition: trigger
+            id: start
+        sequence:
+          - variables:
+              next_duration: >
+                {{ duration_long if
+                is_state('switch.third_reality_inc_3rsp02028bz_2','on')
+                   else duration_short }}
+          - target:
+              entity_id: switch.third_reality_inc_3rsp02028bz_2
+            action: switch.turn_on
+          - target:
+              entity_id: timer.living_bug_trap_cycle
+            data:
+              duration: "{{ next_duration }}"
+            action: timer.start
+      - conditions:
+          - condition: trigger
+            id: timer_finished
+        sequence:
+          - variables:
+              is_on: "{{ is_state('switch.third_reality_inc_3rsp02028bz_2','on') }}"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ is_on }}"
+                sequence:
+                  - target:
+                      entity_id: switch.third_reality_inc_3rsp02028bz_2
+                    action: switch.turn_off
+                  - target:
+                      entity_id: timer.living_bug_trap_cycle
+                    data:
+                      duration: "{{ duration_short }}"
+                    action: timer.start
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not is_on }}"
+                sequence:
+                  - target:
+                      entity_id: switch.third_reality_inc_3rsp02028bz_2
+                    action: switch.turn_on
+                  - target:
+                      entity_id: timer.living_bug_trap_cycle
+                    data:
+                      duration: "{{ duration_long }}"
+                    action: timer.start
+      - conditions:
+          - condition: trigger
             id: stop
         sequence:
           - target:
@@ -31,76 +79,22 @@ actions:
             action: switch.turn_off
       - conditions:
           - condition: trigger
-            id: start
-        sequence:
-          - target:
-              entity_id: switch.third_reality_inc_3rsp02028bz_2
-            action: switch.turn_on
-          - target:
-              entity_id: timer.living_bug_trap_cycle
-            data:
-              duration: "01:00:00"
-            action: timer.start
-      - conditions:
-          - condition: trigger
             id: startup
           - condition: state
             entity_id: input_boolean.living_bug_trap_cycle_active
             state: "on"
         sequence:
-          - choose:
-              - conditions:
-                  - condition: state
-                    entity_id: switch.third_reality_inc_3rsp02028bz_2
-                    state: "on"
-                sequence:
-                  - target:
-                      entity_id: timer.living_bug_trap_cycle
-                    data:
-                      duration: "01:00:00"
-                    action: timer.start
-              - conditions:
-                  - condition: state
-                    entity_id: switch.third_reality_inc_3rsp02028bz_2
-                    state: "off"
-                sequence:
-                  - target:
-                      entity_id: timer.living_bug_trap_cycle
-                    data:
-                      duration: "00:10:00"
-                    action: timer.start
-      - conditions:
-          - condition: trigger
-            id: timer_finished
-          - condition: state
-            entity_id: input_boolean.living_bug_trap_cycle_active
-            state: "on"
-        sequence:
-          - choose:
-              - conditions:
-                  - condition: state
-                    entity_id: switch.third_reality_inc_3rsp02028bz_2
-                    state: "on"
-                sequence:
-                  - target:
-                      entity_id: switch.third_reality_inc_3rsp02028bz_2
-                    action: switch.turn_off
-                  - target:
-                      entity_id: timer.living_bug_trap_cycle
-                    data:
-                      duration: "00:10:00"
-                    action: timer.start
-              - conditions:
-                  - condition: state
-                    entity_id: switch.third_reality_inc_3rsp02028bz_2
-                    state: "off"
-                sequence:
-                  - target:
-                      entity_id: switch.third_reality_inc_3rsp02028bz_2
-                    action: switch.turn_on
-                  - target:
-                      entity_id: timer.living_bug_trap_cycle
-                    data:
-                      duration: "01:00:00"
-                    action: timer.start
+          - variables:
+              duration: >
+                {{ duration_long
+                   if is_state('switch.third_reality_inc_3rsp02028bz_2', 'on')
+                   else duration_short }}
+          - action: timer.start
+            target:
+              entity_id: timer.living_bug_trap_cycle
+            data:
+              duration: "{{ duration }}"
+variables:
+  duration_long: "02:00:00"
+  duration_short: "00:10:00"
 mode: single
