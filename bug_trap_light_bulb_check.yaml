@@ -1,5 +1,7 @@
 alias: Bug Trap Light bulb Check
-description: "Check the light bulb using the current value. If the current is 0, then the light bulb is not working."
+description: >-
+  Check the light bulb using the current value. If the current is 0, then the
+  light bulb is not working.
 triggers:
   - trigger: state
     entity_id:
@@ -10,27 +12,30 @@ triggers:
     to: "on"
 actions:
   - delay:
-      seconds: 5
+      hours: 0
+      minutes: 0
+      seconds: 50
+      milliseconds: 0
   - variables:
       room_map:
-        switch.third_reality_inc_3rsp02028bz_4: 
+        switch.third_reality_inc_3rsp02028bz_4:
           name: Office
-          sensor: sensor.third_reality_inc_3rsp02028bz_current_4
-        switch.third_reality_inc_3rsp02028bz: 
+          sensor: sensor.third_reality_inc_3rsp02028bz_power_4
+        switch.third_reality_inc_3rsp02028bz:
           name: Bed Room
-          sensor: sensor.third_reality_inc_3rsp02028bz_current
-        switch.third_reality_inc_3rsp02028bz_2: 
+          sensor: sensor.third_reality_inc_3rsp02028bz_power
+        switch.third_reality_inc_3rsp02028bz_2:
           name: Living Room
-          sensor: sensor.third_reality_inc_3rsp02028bz_current_2
-        switch.third_reality_inc_3rsp02028bz_3: 
+          sensor: sensor.third_reality_inc_3rsp02028bz_power_2
+        switch.third_reality_inc_3rsp02028bz_3:
           name: Guest Room
-          sensor: sensor.third_reality_inc_3rsp02028bz_current_3
+          sensor: sensor.third_reality_inc_3rsp02028bz_power_3
       triggered_switch: "{{ trigger.entity_id }}"
       room_name: "{{ room_map[trigger.entity_id]['name'] }}"
-      current_sensor: "{{ room_map[trigger.entity_id]['sensor'] }}"
+      power_sensor: "{{ room_map[trigger.entity_id]['sensor'] }}"
   - if:
       - condition: template
-        value_template: "{{ states(current_sensor) | float(0) == 0 }}"
+        value_template: "{{ states(power_sensor) | float(0) == 0 }}"
     then:
       - action: telegram_bot.send_message
         data:
