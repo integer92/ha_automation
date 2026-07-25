@@ -1,6 +1,6 @@
 alias: Bug Trap Light bulb Check
 description: >-
-  Check the light bulb using the current value. If the current is 0, then the
+  Check the light bulb using the power value. If the power is 0, then the
   light bulb is not working.
 triggers:
   - trigger: state
