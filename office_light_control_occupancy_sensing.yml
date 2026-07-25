@@ -25,6 +25,11 @@ actions:
             data: {}
             target:
               device_id: 2e563ac0657988f54ccb7f7dbfac0026
+          - action: switch.turn_on
+            metadata: {}
+            target:
+              device_id: 1107b84f879afba670d7312fc563d89e
+            data: {}
       - conditions:
           - condition: trigger
             id: not_occupied
@@ -34,4 +39,9 @@ actions:
             data: {}
             target:
               device_id: 2e563ac0657988f54ccb7f7dbfac0026
+          - action: switch.turn_off
+            metadata: {}
+            target:
+              entity_id: switch.sonoff_zbminir2
+            data: {}
 mode: single
