@@ -1,0 +1,161 @@
+environment_vars:
+  FRIGATE_MQTT_USER: ""
+  FRIGATE_MQTT_PASSWORD: ""
+  FRIGATE_RTSP_USER: ""
+  FRIGATE_RTSP_PASSWORD: ""
+  FRIGATE_RTSP_EUFY_USER: ""
+  FRIGATE_RTSP_EUFY_PASSWORD: ""
+
+mqtt:
+  enabled: true
+  host: 192.168.4.103
+  user: "{FRIGATE_MQTT_USER}"
+  password: "{FRIGATE_MQTT_PASSWORD}"
+
+ffmpeg:
+  hwaccel_args: preset-vaapi
+
+detectors:
+  ov:
+    type: openvino
+    device: GPU
+
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  path: /openvino-model/ssdlite_mobilenet_v2.xml
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
+
+objects:
+  track:
+    - person
+    - car
+    - bicycle
+    - motorcycle
+
+record:
+  enabled: true
+
+  motion:
+    days: 7
+
+  alerts:
+    retain:
+      days: 30
+      mode: motion
+
+  detections:
+    retain:
+      days: 30
+      mode: motion
+
+snapshots:
+  enabled: true
+  retain:
+    default: 30
+
+cameras:
+  front_camera:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://{FRIGATE_RTSP_EUFY_USER}:{FRIGATE_RTSP_EUFY_PASSWORD}@192.168.4.105/live0
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    motion:
+      threshold: 30
+      contour_area: 20
+      improve_contrast: true
+    objects:
+      track:
+        - person
+        - car
+        - bicycle
+        - motorcycle
+
+      filters:
+        person:
+          min_area: 3000
+          min_score: 0.6
+        car:
+          min_area: 3900
+          min_score: 0.6
+        bicycle:
+          min_area: 3000
+          min_score: 0.6
+        motorcycle:
+          min_area: 3000
+          min_score: 0.6
+        dog:
+          min_area: 2000
+          min_score: 0.6
+
+    zones:
+      driveway:
+        coordinates: 
+          0,0.377,0.478,0.109,1,0.198,0.979,0.909,0.778,0.72,0.571,0.775,0.01,0.802
+        loitering_time: 10
+        objects: car
+        inertia: 3
+    review:
+      alerts:
+        required_zones: driveway
+  fdoor_camera:
+    enabled: true
+    ffmpeg:
+      inputs:
+#        - path: rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.4.28/ch0_0.h264
+        - path: rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.4.35:554/stream1
+          roles:
+            - record
+#        - path: rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.4.28/ch0_1.h264
+        - path: rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.4.35:554/stream2
+          roles:
+            - detect
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    motion:
+      threshold: 30
+      contour_area: 20
+      improve_contrast: true
+    objects:
+      track:
+        - person
+        - dog
+        - cat
+
+  side_camera:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.4.38/ch0_1.h264
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    motion:
+      threshold: 30
+      contour_area: 20
+      improve_contrast: true
+    objects:
+      track:
+        - person
+        - dog
+        - cat
+
+version: 0.17-0
