@@ -28,12 +28,4 @@ zha:
 additional_ca:
   digicert_g1_root: digicert_g1.crt
 
-proximity:
-  home_tesla:
-    zone: home
-    devices:
-      - device_tracker.tesla_location
-    tolerance: 10
-    unit_of_measurement: km
-
 mqtt: !include mqtt_sensors.yaml
