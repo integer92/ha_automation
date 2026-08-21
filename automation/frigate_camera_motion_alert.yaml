@@ -1,21 +1,25 @@
 alias: Frigate camera motion alert
 triggers:
   - trigger: state
-    entity_id: binary_sensor.front_camera_person_occupancy
-    to: "on"
+    entity_id: binary_sensor.front_person_person_occupancy
+    to: 'on'
     id: front
   - trigger: state
     entity_id: binary_sensor.fdoor_camera_person_occupancy
-    to: "on"
+    to: 'on'
     id: fdoor
   - trigger: state
     entity_id: binary_sensor.side_camera_person_occupancy
-    to: "on"
+    to: 'on'
     id: side
   - trigger: state
-    entity_id: binary_sensor.driveway_car_occupancy
-    to: "on"
+    entity_id: binary_sensor.driveway_all_occupancy
+    to: 'on'
     id: driveway
+  - trigger: state
+    entity_id: binary_sensor.yard_cam_person_occupancy
+    to: 'on'
+    id: yard
 conditions: []
 actions:
   - choose:
@@ -26,7 +30,7 @@ actions:
           - variables:
               camera: camera.front_camera
               image: image.front_camera_person
-              name: Front
+              name: Front Person
               file: /config/www/tmp/front_camera_latest.jpg
       - conditions:
           - condition: trigger
@@ -55,19 +59,28 @@ actions:
               image: image.front_camera_car
               name: Driveway
               file: /config/www/tmp/front_camera_latest.jpg
+      - conditions:
+          - condition: trigger
+            id: yard
+        sequence:
+          - variables:
+              camera: camera.yard_cam
+              image: image.side_cam_person
+              name: Yard
+              file: /config/www/tmp/yard_cam_latest.jpg
     default:
       - stop: No matching trigger id (probably manual run) — aborting
   - action: camera.snapshot
     target:
-      entity_id: "{{ camera }}"
+      entity_id: '{{ camera }}'
     data:
-      filename: "{{ file }}"
+      filename: '{{ file }}'
   - action: telegram_bot.send_photo
     data:
-      file: "{{ file }}"
+      file: '{{ file }}'
   - action: telegram_bot.send_photo
     data:
       url: |
         {{ "http://localhost:8123" ~ state_attr(image, "entity_picture") }}
-      caption: "{{ name }} motion detected!"
+      caption: '{{ name }} motion detected!'
 mode: single
