@@ -1,0 +1,12 @@
+alias: Driveway Parked Car OFF
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.driveway_all_occupancy
+    to: 'off'
+    for:
+      minutes: 5
+actions:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.driveway_car_alerted
+mode: single
