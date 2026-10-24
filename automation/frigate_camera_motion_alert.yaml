@@ -2,24 +2,39 @@ alias: Frigate camera motion alert
 triggers:
   - trigger: state
     entity_id: binary_sensor.front_person_person_occupancy
+    from: 'off'
     to: 'on'
     id: front
   - trigger: state
     entity_id: binary_sensor.fdoor_camera_person_occupancy
+    from: 'off'
     to: 'on'
     id: fdoor
   - trigger: state
     entity_id: binary_sensor.side_camera_person_occupancy
+    from: 'off'
     to: 'on'
     id: side
   - trigger: state
     entity_id: binary_sensor.driveway_all_occupancy
+    from: 'off'
     to: 'on'
     id: driveway
   - trigger: state
     entity_id: binary_sensor.yard_cam_person_occupancy
+    from: 'off'
     to: 'on'
     id: yard
+  - trigger: state
+    entity_id: binary_sensor.patio_cam_person_occupancy
+    from: 'off'
+    to: 'on'
+    id: patio
+  - trigger: state
+    entity_id: binary_sensor.garage_cam_person_occupancy
+    from: 'off'
+    to: 'on'
+    id: garage
 conditions: []
 actions:
   - choose:
@@ -53,6 +68,9 @@ actions:
       - conditions:
           - condition: trigger
             id: driveway
+          - condition: state
+            entity_id: input_boolean.driveway_car_alerted
+            state: 'off'
         sequence:
           - variables:
               camera: camera.front_camera
@@ -65,9 +83,27 @@ actions:
         sequence:
           - variables:
               camera: camera.yard_cam
-              image: image.side_cam_person
+              image: image.yard_cam_person
               name: Yard
               file: /config/www/tmp/yard_cam_latest.jpg
+      - conditions:
+          - condition: trigger
+            id: patio
+        sequence:
+          - variables:
+              camera: camera.patio_cam
+              image: image.patio_cam_person
+              name: Patio
+              file: /config/www/tmp/patio_cam_latest.jpg
+      - conditions:
+          - condition: trigger
+            id: garage
+        sequence:
+          - variables:
+              camera: camera.garage_cam_2
+              image: image.garage_cam_person
+              name: Garage
+              file: /config/www/tmp/garage_cam_latest.jpg
     default:
       - stop: No matching trigger id (probably manual run) — aborting
   - action: camera.snapshot
@@ -75,6 +111,11 @@ actions:
       entity_id: '{{ camera }}'
     data:
       filename: '{{ file }}'
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
   - action: telegram_bot.send_photo
     data:
       file: '{{ file }}'
@@ -83,4 +124,12 @@ actions:
       url: |
         {{ "http://localhost:8123" ~ state_attr(image, "entity_picture") }}
       caption: '{{ name }} motion detected!'
-mode: single
+  - if:
+      - condition: trigger
+        id: driveway
+    then:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.driveway_car_alerted
+mode: parallel
+max: 10
