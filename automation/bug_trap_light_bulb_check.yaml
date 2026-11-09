@@ -1,6 +1,6 @@
 alias: Bug Trap Light bulb Check
 description: >-
-  Check the light bulb using the power value. If the power is 0, then the
+  Check the light bulb using the current value. If the current is 0, then the
   light bulb is not working.
 triggers:
   - trigger: state
@@ -9,13 +9,8 @@ triggers:
       - switch.third_reality_inc_3rsp02028bz
       - switch.third_reality_inc_3rsp02028bz_2
       - switch.third_reality_inc_3rsp02028bz_3
-    to: "on"
+    to: 'on'
 actions:
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 50
-      milliseconds: 0
   - variables:
       room_map:
         switch.third_reality_inc_3rsp02028bz_4:
@@ -30,15 +25,23 @@ actions:
         switch.third_reality_inc_3rsp02028bz_3:
           name: Guest Room
           sensor: sensor.third_reality_inc_3rsp02028bz_power_3
-      triggered_switch: "{{ trigger.entity_id }}"
-      room_name: "{{ room_map[trigger.entity_id]['name'] }}"
-      power_sensor: "{{ room_map[trigger.entity_id]['sensor'] }}"
+      triggered_switch: '{{ trigger.entity_id }}'
+      room_name: '{{ room_map[trigger.entity_id][''name''] }}'
+      power_sensor: '{{ room_map[trigger.entity_id][''sensor''] }}'
+  - wait_template: '{{ states(power_sensor) | float(0) > 0 }}'
+    timeout: '00:01:30'
+    continue_on_timeout: true
   - if:
       - condition: template
-        value_template: "{{ states(power_sensor) | float(0) == 0 }}"
+        value_template: |-
+          {{ not wait.completed
+             and is_state(triggered_switch, 'on')
+             and states(power_sensor) | float(0) == 0 }}
     then:
       - action: telegram_bot.send_message
         data:
-          message: "{{ room_name }} Bug Trap Check!!"
+          message: >-
+            {{ room_name }} Bug Trap Check!! (power: {{ states(power_sensor) }},
+            checked {{ now().strftime("%H:%M:%S") }})
 mode: parallel
 max: 10
